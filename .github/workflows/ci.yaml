@@ -1,0 +1,37 @@
+# Reusable CI workflow for Node.js application
+name: Reusable CI
+
+on:
+  workflow_call:
+    inputs:
+      target: # The target command to run the script in package.json, if not specified, it will run `yarn install`
+        type: string
+        required: false
+      runs-on:
+        type: string
+        required: false
+        default: ubuntu-latest
+      node-version: # The node version to use
+        type: string
+        required: false
+        default: 16
+
+jobs:
+  task:
+    runs-on: ${{ inputs.runs-on }}
+    steps:
+      - uses: actions/checkout@v3
+        name: Checkout
+
+      - name: Setup node with cache
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ inputs.node-version }}
+          cache: yarn
+
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile --prefer-offline
+
+      - name: Target
+        if: ${{ inputs.target }}
+        run: yarn ${{ inputs.target }}
